@@ -1,0 +1,8 @@
+{
+    "name": "oscar/poo-practice",
+    "autoload": {
+        "psr-4": {
+            "Oscar\\PooPractice\\": "src/"
+        }
+    }
+}
