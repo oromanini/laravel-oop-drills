@@ -94,3 +94,67 @@ Option B is the stronger interview answer: Order's constructor signature
 never changes, it always takes a single DiscountRule. The complexity of
 how many discounts and in what order is pushed into the composite object,
 instead of leaking into Order.
+
+# How do I spot and separate responsibilities when a controller becomes a "God object"?
+
+The Single Responsibility Principle says a class should have one reason to
+change. A Laravel controller violates this constantly, because it's the
+first thing that receives the request, which makes it the easiest place to
+dump unrelated logic.
+
+A "God controller" typically mixes five responsibilities in one method:
+
+1. Validation
+2. Business logic (discount rules, pricing)
+3. Persistence (saving the model)
+4. Side effects (sending an email, writing a log)
+5. Response formatting
+
+For example, an `OrderController::store()` that validates the request,
+applies a VIP discount inline, builds and saves an `Order` model, sends a
+confirmation email, logs the action, and returns a JSON response - all in
+one method - has at least five reasons to change. A pricing rule change, a
+new notification channel, and a validation rule change all touch the same
+method.
+
+The fix is to extract each responsibility into its own class with a single
+job:
+
+- Validation stays in the controller (or a Form Request in a real Laravel
+  app) - it's about the HTTP layer, not the business.
+- Business logic moves to a Service (`OrderService`), which depends on a
+  Factory to decide which rule to apply.
+- The decision of *which* `DiscountRule` to construct moves to a Factory
+  (`DiscountRuleFactory`), so the Service never has conditionals about VIP
+  status or coupons - it just asks the Factory for a rule and applies it.
+- Persistence and side effects (Mail, Log) are out of scope for this
+  drill, but in a real app they'd move to the Model/Repository and to
+  Events/Listeners or Jobs, respectively.
+
+After the refactor, `OrderController::store()` has one job: translate an
+HTTP request into a call to `OrderService` and translate the result back
+into a response. Each class now has exactly one reason to change.
+
+# Why does OrderService depend on DiscountRuleFactory instead of building the DiscountRule itself?
+
+Because deciding *which* discount rule applies (VIP? coupon? both?) is a
+separate responsibility from applying one. If `OrderService` had an
+`if ($isVip) { ... }` chain inline, every new combination of rules would
+mean editing `OrderService` directly, and the same decision logic could
+drift out of sync if it's duplicated anywhere else that needs to build a
+`DiscountRule`.
+
+By injecting `DiscountRuleFactory` as a constructor dependency:
+
+- `OrderService` stays focused on orchestrating the order flow (ask the
+  Factory for a rule, apply it, return the total).
+- The Factory is the single, reusable source of truth for "how do I build
+  the right DiscountRule for this combination of flags."
+- Adding a new rule (e.g., a seasonal promotion) means changing the
+  Factory's `match` expression in one place, not hunting through every
+  class that happens to build discount rules.
+
+This follows the same constructor-vs-method-parameter rule used
+throughout this project: constructor = stable, shared dependency
+(Services, Factories, Repositories); method parameters = data that
+changes per request (`$amount`, `$isVip`, `$hasCoupon`).
