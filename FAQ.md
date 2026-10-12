@@ -175,3 +175,20 @@ delegates to the matching strategy, and throws an
 To add a new format, I create one class implementing `ExportStrategy` and
 register it where the exporter is built (a Service Provider in Laravel).
 The exporter itself never changes.
+
+# A subclass breaks the contract of its parent class. How do you notice that in a code review?
+
+The contract is more than the method signature: it is everything callers
+rely on without knowing the concrete class. For `DiscountRule`, that means a
+result between zero and the original amount. A type system cannot express
+that, so a `BrokenDiscount` that returned 110% of the amount compiled and ran
+without complaint.
+
+In a code review, the red flag is a caller defending itself against its own
+abstraction, such as a guard clause or an `instanceof` check, because it means
+the contract is not trustworthy.
+
+I would enforce the contract with a contract test that runs every
+`DiscountRule` against edge values (zero, small amounts, decimals, the
+original amount), so any new rule is checked before it reaches production.
+The guard in `Order` stays only as a last line of defense.
