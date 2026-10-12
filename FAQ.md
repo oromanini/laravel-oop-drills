@@ -158,3 +158,20 @@ This follows the same constructor-vs-method-parameter rule used
 throughout this project: constructor = stable, shared dependency
 (Services, Factories, Repositories); method parameters = data that
 changes per request (`$amount`, `$isVip`, `$hasCoupon`).
+
+# How would you design a report exporter so that adding a new format never requires editing it?
+
+The original `ReportExporter` used a `switch` on the format, so every new
+format forced me to open and modify a class that already worked, which
+violates the Open/Closed Principle.
+
+I closed it with the Strategy pattern: an `ExportStrategy` interface, one
+class per format (`CsvExportStrategy`, `XmlExportStrategy`, ...), and a
+`ReportExporter` that receives a map of available strategies through its
+constructor. Its `export()` looks up the requested format in that map,
+delegates to the matching strategy, and throws an
+`InvalidArgumentException` if the format is unknown.
+
+To add a new format, I create one class implementing `ExportStrategy` and
+register it where the exporter is built (a Service Provider in Laravel).
+The exporter itself never changes.
