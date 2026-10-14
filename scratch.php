@@ -2,10 +2,9 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Oscar\PooPractice\Models\Order;
 use Oscar\PooPractice\Services\BrokenDiscount;
-use Oscar\PooPractice\Services\CompositeDiscount;
 use Oscar\PooPractice\Services\CouponDiscount;
+use Oscar\PooPractice\Services\EmailSender;
 use Oscar\PooPractice\Services\NoDiscount;
 use Oscar\PooPractice\Services\VipDiscount;
 
@@ -71,3 +70,6 @@ foreach ($testValues as $initialValue){
         echo getStrToFail($discountRule, $initialValue, $finalValue);
     }
 }
+
+$email = new EmailSender();
+$email->sendEmail('oscar@example.com', 'Your order shipped');

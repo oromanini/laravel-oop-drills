@@ -192,3 +192,26 @@ I would enforce the contract with a contract test that runs every
 `DiscountRule` against edge values (zero, small amounts, decimals, the
 original amount), so any new rule is checked before it reaches production.
 The guard in `Order` stays only as a last line of defense.
+
+# A class implements a large interface and has to leave methods empty or throwing. How do you fix it, and why does it matter?
+
+That is a sign the Interface Segregation Principle is broken: the interface
+forces its implementers to promise capabilities they do not have. A
+`Notifier` with `sendEmail`, `sendSms` and `sendPush` made an email-only class
+implement the other two. An empty body is a "ghost behavior": the method is
+public, callers assume the SMS was sent, and nothing happens, with no error.
+Throwing an exception is the loud version of the same problem. Both are Liskov
+violations, because the subtype does not honor the contract of its parent.
+
+I fix it by splitting the interface into small role interfaces
+(`EmailNotifier`, `SmsNotifier`, `PushNotifier`), each with one method, so a
+class implements only what it can really do. Clients depend only on the part
+they use: an order-shipped notification that needs email takes an
+`EmailNotifier`, and removing SMS from the system does not touch it. Calling a
+method a class does not have now fails immediately and loudly, instead of
+silently.
+
+I split when implementations have different capabilities or clients use
+different parts of the interface. If every channel did the same thing, a
+single `send()` interface with one class per channel (Strategy) would be
+simpler, and splitting further would be over-engineering.
