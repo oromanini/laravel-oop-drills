@@ -1,12 +1,19 @@
 <?php
 
+use Oscar\PooPractice\Container\Container;
+use Oscar\PooPractice\Contracts;
+use Oscar\PooPractice\Contracts\EmailNotifier;
+use Oscar\PooPractice\Services\EmailSender;
+use Oscar\PooPractice\Services\FakeEmailSender;
+use Oscar\PooPractice\Services\OrderShippedNotification;
+
 require __DIR__ . '/vendor/autoload.php';
 
-use Oscar\PooPractice\Services\BrokenDiscount;
-use Oscar\PooPractice\Services\CouponDiscount;
-use Oscar\PooPractice\Services\EmailSender;
-use Oscar\PooPractice\Services\NoDiscount;
-use Oscar\PooPractice\Services\VipDiscount;
+//use Oscar\PooPractice\Services\BrokenDiscount;
+//use Oscar\PooPractice\Services\CouponDiscount;
+//use Oscar\PooPractice\Services\EmailSender;
+//use Oscar\PooPractice\Services\NoDiscount;
+//use Oscar\PooPractice\Services\VipDiscount;
 
 //$discountRuleFactory = new DiscountRuleFactory();
 //$orderService = new OrderService($discountRuleFactory);
@@ -30,46 +37,61 @@ use Oscar\PooPractice\Services\VipDiscount;
 //$order = new Order(grossAmount: 100, rule: new NoDiscount());
 //echo $order->total() . PHP_EOL;
 
-$discountRules = [
-    new NoDiscount(),
-    new VipDiscount(),
-    new CouponDiscount(),
-    new BrokenDiscount(),
-];
+//$discountRules = [
+//    new NoDiscount(),
+//    new VipDiscount(),
+//    new CouponDiscount(),
+//    new BrokenDiscount(),
+//];
 
-$testValues = [
-    0,
-    1,
-    33.33,
-    100,
-];
+//$testValues = [
+//    0,
+//    1,
+//    33.33,
+//    100,
+//];
 
-function getStrToFail(mixed $discountRule, float $initialValue, mixed $finalValue): string
-{
-    return (new ReflectionClass($discountRule))->getShortName()
-        . ' = ' . $initialValue . ' => '
-        . $finalValue . ' - '
-        . 'FAIL' . PHP_EOL;
-}
+//function getStrToFail(mixed $discountRule, float $initialValue, mixed $finalValue): string
+//{
+//    return (new ReflectionClass($discountRule))->getShortName()
+//        . ' = ' . $initialValue . ' => '
+//        . $finalValue . ' - '
+//        . 'FAIL' . PHP_EOL;
+//}
 
-function getStrToPass(mixed $discountRule, float $initialValue, mixed $finalValue): string
-{
-    return (new ReflectionClass($discountRule))->getShortName()
-        . ' = ' . $initialValue . ' => ' .
-        $finalValue . ' - '
-        . 'PASS' . PHP_EOL;
-}
+//function getStrToPass(mixed $discountRule, float $initialValue, mixed $finalValue): string
+//{
+//    return (new ReflectionClass($discountRule))->getShortName()
+//        . ' = ' . $initialValue . ' => ' .
+//        $finalValue . ' - '
+//        . 'PASS' . PHP_EOL;
+//}
 
-foreach ($testValues as $initialValue){
-    foreach ($discountRules as $discountRule) {
-        $finalValue = $discountRule->calculate($initialValue);
-        if ($finalValue <= $initialValue && $finalValue >= 0) {
-            echo getStrToPass($discountRule, $initialValue, $finalValue);
-            continue;
-        }
-        echo getStrToFail($discountRule, $initialValue, $finalValue);
-    }
-}
+//foreach ($testValues as $initialValue){
+//    foreach ($discountRules as $discountRule) {
+//        $finalValue = $discountRule->calculate($initialValue);
+//        if ($finalValue <= $initialValue && $finalValue >= 0) {
+//            echo getStrToPass($discountRule, $initialValue, $finalValue);
+//            continue;
+//        }
+//        echo getStrToFail($discountRule, $initialValue, $finalValue);
+//    }
+//}
 
-$email = new EmailSender();
-$email->sendEmail('oscar@example.com', 'Your order shipped');
+//$email = new EmailSender();
+//$email->sendEmail('oscar@example.com', 'Your order shipped');
+
+$container = new Container();
+$container->bind(
+    abstract: EmailNotifier::class,
+    factory: fn() => new FakeEmailSender()
+);
+
+$container->bind(
+    OrderShippedNotification::class,
+    fn() => new OrderShippedNotification($container->make(EmailNotifier::class))
+);
+
+$notification = $container->make(OrderShippedNotification::class);
+
+$notification->notify('oscar@example.com', 'Your order shipped!');
