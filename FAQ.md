@@ -215,3 +215,28 @@ I split when implementations have different capabilities or clients use
 different parts of the interface. If every channel did the same thing, a
 single `send()` interface with one class per channel (Strategy) would be
 simpler, and splitting further would be over-engineering.
+
+# What is the difference between DI and DIP, and how does a service container let you swap an email provider without touching business code?
+
+Dependency Injection (DI) is a technique: a class receives its dependencies from
+the outside, usually through the constructor, instead of creating them with
+`new`. Dependency Inversion (DIP) is a principle: high-level business classes
+must depend on abstractions, not on concrete low-level classes, and the
+concrete classes depend on those abstractions too. You can use DI without
+following DIP, for example by injecting a concrete `EmailSender` through the
+constructor. The class still knows the concrete type, so it is still coupled
+to it.
+
+In the drill, `OrderShippedNotification` asks for an `EmailNotifier` (the
+contract) and never names the provider. The service container holds the
+binding, which implementation fulfills each contract and how to build it:
+
+    $container->bind(EmailNotifier::class, fn() => new EmailSender());
+
+To switch provider, I change that single binding. The business class does not
+change, and in tests I bind a fake sender so no real email is sent. In Laravel
+the same idea is `$this->app->bind(EmailNotifier::class, SomeSender::class)` in
+a service provider, and the container also auto-wires typed constructors.
+
+One caveat: the container only injects what it builds. An object created by
+hand with `new` bypasses it, so the dependency has to be passed manually.
