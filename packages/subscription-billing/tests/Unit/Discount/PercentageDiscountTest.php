@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Oscar\SubscriptionBilling\Tests\Unit\Discount;
 
+use InvalidArgumentException;
 use Oscar\SubscriptionBilling\Discount\PercentageDiscount;
 use Oscar\SubscriptionBilling\Money\Currency;
 use Oscar\SubscriptionBilling\Money\Money;
@@ -36,7 +37,6 @@ class PercentageDiscountTest extends TestCase
         );
     }
 
-
     public static function percentageDiscountScenarios(): array
     {
         return [
@@ -54,6 +54,30 @@ class PercentageDiscountTest extends TestCase
                 'priceCents' => 1000,
                 'percent' => 100,
                 'expectedCents' => 0,
+            ],
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('percentageDiscountInvalidScenarios')]
+    public function refusesAPercentOutsideZeroToOneHundred(int $percent): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageIsOrContains(
+            'Discount percent must be between 0 and 100.',
+        );
+
+        new PercentageDiscount($percent);
+    }
+
+    public static function percentageDiscountInvalidScenarios(): array
+    {
+        return [
+            'negative percent' => [
+                'percent' => -1,
+            ],
+            'greater than one hundred' => [
+                'percent' => 101,
             ],
         ];
     }
