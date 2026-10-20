@@ -13,7 +13,8 @@ use PHPUnit\Framework\Attributes\Test;
 class SubscriptionBillingServiceProviderTest extends TestCase
 {
     #[Test]
-    public function theProviderIsLoadedByTheApplication(): void {
+    public function theProviderIsLoadedByTheApplication(): void
+    {
         $this->assertTrue(
             $this->app->providerIsLoaded(SubscriptionBillingServiceProvider::class)
         );
