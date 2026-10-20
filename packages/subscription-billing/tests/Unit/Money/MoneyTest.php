@@ -16,7 +16,8 @@ use PHPUnit\Framework\TestCase;
 class MoneyTest extends TestCase
 {
     #[Test]
-    public function exposesCentsAndCurrencyItWasCreatedWith(): void {
+    public function exposesCentsAndCurrencyItWasCreatedWith(): void
+    {
 
         $money = Money::fromCents(1999, Currency::BRL);
 
@@ -114,7 +115,7 @@ class MoneyTest extends TestCase
     }
 
     #[Test]
-    public function keepsTheCurrencyAndLeavesTheOriginalUntouchedWhenApplyingAPercentage():void
+    public function keepsTheCurrencyAndLeavesTheOriginalUntouchedWhenApplyingAPercentage(): void
     {
         $originalCents = 1999;
         $money = Money::fromCents($originalCents, Currency::EUR);
