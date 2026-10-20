@@ -1,0 +1,43 @@
+{
+  "name": "oscar/subscription-billing",
+  "description": "Subscription billing package used to practice SOLID principles and design patterns in Laravel.",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Oscar\\SubscriptionBilling\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Oscar\\SubscriptionBilling\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Oscar\\SubscriptionBilling\\SubscriptionBillingServiceProvider"
+      ]
+    }
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit"
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "require": {
+    "illuminate/container": "^13.36",
+    "illuminate/contracts": "^13.36",
+    "illuminate/http": "^13.36",
+    "illuminate/routing": "^13.36",
+    "illuminate/support": "^13.36",
+    "illuminate/validation": "^13.36"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^11.3",
+    "phpunit/phpunit": "^13.4"
+  }
+}
