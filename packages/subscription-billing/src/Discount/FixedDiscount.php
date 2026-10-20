@@ -9,19 +9,18 @@ use Oscar\SubscriptionBilling\Money\Money;
 
 final class FixedDiscount implements DiscountRule
 {
-    public const int MAX_LIMIT = 30;
+    private const int MAX_PERCENT = 30;
 
-    public function __construct(private readonly int $discount)
+    public function __construct(private readonly int $discountCents)
     {
     }
 
     public function apply(Money $price): Money
     {
-
-        ($this->discount * 100 > $price->cents() * self::MAX_LIMIT)
+        ($this->discountCents * 100 > $price->cents() * self::MAX_PERCENT)
         && throw new InvalidArgumentException('Fixed discount must not exceed 30% of the price.');
 
-        $fixedDiscount = Money::fromCents($this->discount, $price->currency());
+        $fixedDiscount = Money::fromCents($this->discountCents, $price->currency());
 
         return $price->subtract($fixedDiscount);
     }
