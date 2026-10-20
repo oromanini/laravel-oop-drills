@@ -19,11 +19,11 @@ class FixedDiscountTest extends TestCase
     #[Test]
     #[DataProvider('fixedDiscountScenarios')]
     public function appliesTheFixedOffThePrice(
-        int $discount,
+        int $discountCents,
         int $expectedCents,
     ): void {
         $price = Money::fromCents(10000, Currency::BRL);
-        $rule = new FixedDiscount($discount);
+        $rule = new FixedDiscount($discountCents);
 
         $this->assertSame($expectedCents, $rule->apply($price)->cents());
     }
@@ -32,15 +32,15 @@ class FixedDiscountTest extends TestCase
     {
         return [
             'a regular fixed amount' => [
-                'discount' => 2000,
+                'discountCents' => 2000,
                 'expectedCents' => 8000,
             ],
             'exactly on the limit' => [
-                'discount' => 3000,
+                'discountCents' => 3000,
                 'expectedCents' => 7000,
             ],
             'zero amount leaves the price untouched' => [
-                'discount' => 0,
+                'discountCents' => 0,
                 'expectedCents' => 10000,
             ],
         ];
@@ -49,13 +49,13 @@ class FixedDiscountTest extends TestCase
     #[Test]
     #[DataProvider('refusedFixedDiscountScenarios')]
     public function refusesTheFixedOffThePrice(
-        int $discount,
+        int $discountCents,
     ): void {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessageIsOrContains('Fixed discount must not exceed 30% of the price.');
 
         $price = Money::fromCents(10000, Currency::BRL);
-        $rule = new FixedDiscount($discount);
+        $rule = new FixedDiscount($discountCents);
 
         $rule->apply($price);
     }
@@ -64,13 +64,13 @@ class FixedDiscountTest extends TestCase
     {
         return [
             'above the limit' => [
-                'discount' => 5000,
+                'discountCents' => 5000,
             ],
-            'just below the limit' => [
-                'discount' => 3001,
+            'just above the limit' => [
+                'discountCents' => 3001,
             ],
             'more than the price' => [
-                'discount' => 20000,
+                'discountCents' => 20000,
             ],
         ];
     }
@@ -83,5 +83,17 @@ class FixedDiscountTest extends TestCase
         $result = $rule->apply($money);
 
         $this->assertSame(expected: 0, actual: $result->cents());
+    }
+
+    #[Test]
+    public function refusesPricingZeroWithDiscount(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageIsOrContains('Fixed discount must not exceed 30% of the price.');
+
+        $money = Money::fromCents(0, Currency::BRL);
+        $rule = new FixedDiscount(10);
+
+        $rule->apply($money);
     }
 }
