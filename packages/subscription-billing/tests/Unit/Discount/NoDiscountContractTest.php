@@ -7,7 +7,7 @@ namespace Oscar\SubscriptionBilling\Tests\Unit\Discount;
 use Oscar\SubscriptionBilling\Discount\DiscountRule;
 use Oscar\SubscriptionBilling\Discount\NoDiscount;
 
-class NoDiscountContractTest extends DiscountRuleContractTestCase
+final class NoDiscountContractTest extends DiscountRuleContractTestCase
 {
     protected function rule(): DiscountRule
     {

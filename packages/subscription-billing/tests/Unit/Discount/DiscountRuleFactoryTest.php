@@ -42,25 +42,25 @@ class DiscountRuleFactoryTest extends TestCase
                 'percent' => null,
                 'fixedDiscountCents' => null,
                 'instance' => NoDiscount::class,
-                'expected' => 10000
+                'expected' => 10000,
             ],
             'Fixed Discount' => [
                 'percent' => null,
                 'fixedDiscountCents' => 1000,
                 'instance' => FixedDiscount::class,
-                'expected' => 9000
+                'expected' => 9000,
             ],
             'Percent Discount' => [
                 'percent' => 10,
                 'fixedDiscountCents' => null,
                 'instance' => PercentageDiscount::class,
-                'expected' => 9000
+                'expected' => 9000,
             ],
             'Composite Discount' => [
                 'percent' => 10,
                 'fixedDiscountCents' => 1000,
                 'instance' => CompositeDiscount::class,
-                'expected' => 8000
+                'expected' => 8000,
             ],
         ];
     }
