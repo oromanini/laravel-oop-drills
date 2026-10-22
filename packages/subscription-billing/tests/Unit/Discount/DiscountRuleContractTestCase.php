@@ -28,6 +28,6 @@ abstract class DiscountRuleContractTestCase extends TestCase
     {
         $price = Money::fromCents(10000, Currency::EUR);
         $result = $this->rule()->apply($price);
-        $this->assertLessThanOrEqual(10000, actual: $result->cents());
+        $this->assertLessThanOrEqual(maximum: 10000, actual: $result->cents());
     }
 }
